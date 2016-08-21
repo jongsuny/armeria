@@ -22,24 +22,22 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 
-import javax.annotation.Nullable;
-
 import org.apache.thrift.meta_data.ListMetaData;
 import org.apache.thrift.protocol.TType;
 
 class ListInfo extends TypeInfo implements CollectionInfo {
 
     static ListInfo of(ListMetaData listMetaData) {
-        return of(listMetaData, null, Collections.emptyMap());
+        return of(listMetaData, Collections.emptyMap());
     }
 
-    static ListInfo of(ListMetaData listMetaData, @Nullable String namespace, Map<String, String> docStrings) {
+    static ListInfo of(ListMetaData listMetaData, Map<String, String> docStrings) {
         requireNonNull(listMetaData, "listMetaData");
 
         assert listMetaData.type == TType.LIST;
         assert !listMetaData.isBinary();
 
-        return new ListInfo(of(listMetaData.elemMetaData, namespace, docStrings));
+        return new ListInfo(of(listMetaData.elemMetaData, docStrings));
     }
 
     static ListInfo of(TypeInfo elementType) {

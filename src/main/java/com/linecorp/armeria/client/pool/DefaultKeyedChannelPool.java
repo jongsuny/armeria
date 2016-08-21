@@ -31,10 +31,11 @@ import io.netty.channel.pool.ChannelHealthChecker;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.FutureListener;
 import io.netty.util.concurrent.Promise;
-import io.netty.util.internal.OneTimeTask;
 
 /**
  * Default {@link KeyedChannelPool} implementation.
+ *
+ * @param <K> the key type
  */
 public class DefaultKeyedChannelPool<K> implements KeyedChannelPool<K> {
 
@@ -99,12 +100,7 @@ public class DefaultKeyedChannelPool<K> implements KeyedChannelPool<K> {
         if (eventLoop.inEventLoop()) {
             acquireHealthyFromPoolOrNew(key, promise);
         } else {
-            eventLoop.execute(new OneTimeTask() {
-                @Override
-                public void run() {
-                    acquireHealthyFromPoolOrNew(key, promise);
-                }
-            });
+            eventLoop.execute(() -> acquireHealthyFromPoolOrNew(key, promise));
         }
 
         return promise;
@@ -128,12 +124,7 @@ public class DefaultKeyedChannelPool<K> implements KeyedChannelPool<K> {
         if (loop.inEventLoop()) {
             doHealthCheck(key, ch, promise);
         } else {
-            loop.execute(new OneTimeTask() {
-                @Override
-                public void run() {
-                    doHealthCheck(key, ch, promise);
-                }
-            });
+            loop.execute(() -> doHealthCheck(key, ch, promise));
         }
 
         return promise;
@@ -164,12 +155,7 @@ public class DefaultKeyedChannelPool<K> implements KeyedChannelPool<K> {
         if (f.isDone()) {
             notifyHealthCheck(key, f, ch, promise);
         } else {
-            f.addListener(new FutureListener<Boolean>() {
-                @Override
-                public void operationComplete(Future<Boolean> future) throws Exception {
-                    notifyHealthCheck(key, future, ch, promise);
-                }
-            });
+            f.addListener((FutureListener<Boolean>) future -> notifyHealthCheck(key, future, ch, promise));
         }
     }
 
@@ -221,12 +207,7 @@ public class DefaultKeyedChannelPool<K> implements KeyedChannelPool<K> {
             if (loop.inEventLoop()) {
                 doReleaseChannel(key, channel, promise);
             } else {
-                loop.execute(new OneTimeTask() {
-                    @Override
-                    public void run() {
-                        doReleaseChannel(key, channel, promise);
-                    }
-                });
+                loop.execute(() -> doReleaseChannel(key, channel, promise));
             }
         } catch (Throwable cause) {
             closeAndFail(channel, cause, promise);
@@ -282,6 +263,11 @@ public class DefaultKeyedChannelPool<K> implements KeyedChannelPool<K> {
         }
     }
 
+    /**
+     * Removes a {@link Channel} that matches the specified {@code key} from this pool.
+     *
+     * @return the removed {@link Channel}. {@code null} if there's no matching {@link Channel}.
+     */
     protected Channel pollChannel(K key) {
         final Deque<Channel> queue = pool.get(key);
         final Channel ch;
@@ -296,6 +282,11 @@ public class DefaultKeyedChannelPool<K> implements KeyedChannelPool<K> {
         return ch;
     }
 
+    /**
+     * Adds a {@link Channel} to this pool.
+     *
+     * @return whether adding the {@link Channel} has succeeded or not
+     */
     protected boolean offerChannel(K key, Channel channel) {
         return pool.computeIfAbsent(key, k -> new ConcurrentLinkedDeque<>()).offer(channel);
     }
@@ -303,12 +294,15 @@ public class DefaultKeyedChannelPool<K> implements KeyedChannelPool<K> {
     @Override
     public void close() {
         pool.forEach((k, v) -> {
-            for (; ; ) {
+            for (;;) {
                 Channel channel = pollChannel(k);
                 if (channel == null) {
                     break;
                 }
-                channel.close();
+
+                if (channel.isOpen()) {
+                    channel.close();
+                }
             }
         });
     }

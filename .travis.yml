@@ -11,6 +11,7 @@ branches:
 
 notifications:
   email: false
+  slack: line-armeria:vLZppggTRH02hwY2eOACIzCG
 
 cache:
   directories:
@@ -30,5 +31,8 @@ install:
   - true
 
 script:
-  - mvn -V -B test site
+  - mvn -V -B -Pcoverage test site
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
 

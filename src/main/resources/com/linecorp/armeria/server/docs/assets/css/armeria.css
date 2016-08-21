@@ -118,6 +118,11 @@ label {
   font-size: 60%;
 }
 
+.main div.description, .main td.description {
+  font-size: 100%;
+  text-align: justify;
+}
+
 .main td ul {
   list-style-type: none;
   padding-left: 0;
@@ -160,6 +165,17 @@ label {
   max-width: 100%;
   font-size: 90%;
   min-height: 256px;
+}
+
+.debug-http-headers {
+  width: 100%;
+  max-width: 100%;
+  font-size: 90%;
+  min-height: 140px;
+}
+
+.debug-http-headers-collapser.opened:after {
+  content: ': ';
 }
 
 .debug-submit {

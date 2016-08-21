@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Stack;
 
+import org.apache.thrift.TBase;
 import org.apache.thrift.TEnum;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TField;
@@ -91,6 +92,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * TODO(Alex Roetter): Also add a new TEXT_PROTOCOL field to ThriftCodec
  * <p>
  * TODO: Support map enum keys specified as strings.
+ * TODO: Support string values for enums that have been typedef'd.
  */
 public class TTextProtocol extends TProtocol {
 
@@ -108,8 +110,8 @@ public class TTextProtocol extends TProtocol {
     private static final byte UNUSED_TYPE = TType.STOP;
     private final Stack<WriterByteArrayOutputStream> writers;
     private final Stack<BaseContext> contextStack;
+    private final Stack<Class<?>> currentFieldClass;
     private JsonNode root;
-    private Class<? extends TEnum> currentFieldEnumClass;
 
     /**
      * Create a parser which can read from trans, and create the output writer
@@ -120,10 +122,12 @@ public class TTextProtocol extends TProtocol {
 
         writers = new Stack<>();
         contextStack = new Stack<>();
+        currentFieldClass = new Stack<>();
         reset();
     }
 
     @Override
+    @SuppressWarnings("rawtypes")
     public Class<? extends IScheme> getScheme() {
         return StandardScheme.class;
     }
@@ -137,6 +141,7 @@ public class TTextProtocol extends TProtocol {
 
         contextStack.clear();
         contextStack.push(new BaseContext());
+        currentFieldClass.clear();
     }
 
     /**
@@ -227,8 +232,6 @@ public class TTextProtocol extends TProtocol {
     /**
      * Helper to write out the end of a Thrift type (either struct or map),
      * both of which are written as JsonObjects.
-     *
-     * @throws TException
      */
     private void writeJsonObjectEnd() throws TException {
         try {
@@ -288,8 +291,6 @@ public class TTextProtocol extends TProtocol {
 
     /**
      * Helper shared by write{List/Set}End
-     *
-     * @throws TException
      */
     private void writeSequenceEnd() throws TException {
         try {
@@ -436,7 +437,12 @@ public class TTextProtocol extends TProtocol {
             throw new TException("Expected Json Object!");
         }
 
-        pushContext(new StructContext(structElem));
+        Class<?> fieldClass = getCurrentFieldClassIfIs(TBase.class);
+        if (fieldClass != null) {
+            pushContext(new StructContext(structElem, fieldClass));
+        } else {
+            pushContext(new StructContext(structElem));
+        }
         return ANONYMOUS_STRUCT;
     }
 
@@ -460,14 +466,14 @@ public class TTextProtocol extends TProtocol {
         }
 
         String fieldName = jsonName.asText();
-        currentFieldEnumClass = getCurrentContext().getEnumClassByFieldName(fieldName);
+        currentFieldClass.push(getCurrentContext().getClassByFieldName(fieldName));
 
         return getCurrentContext().getTFieldByName(fieldName);
     }
 
     @Override
     public void readFieldEnd() throws TException {
-        currentFieldEnumClass = null;
+        currentFieldClass.pop();
     }
 
     @Override
@@ -562,7 +568,8 @@ public class TTextProtocol extends TProtocol {
 
     @Override
     public int readI32() throws TException {
-        if (currentFieldEnumClass != null) {
+        Class<?> fieldClass = getCurrentFieldClassIfIs(TEnum.class);
+        if (fieldClass != null) {
             // Enum fields may be set by string, even though they represent integers.
             getCurrentContext().read();
             JsonNode elem = getCurrentContext().getCurrentChild();
@@ -570,7 +577,7 @@ public class TTextProtocol extends TProtocol {
                 return TypedParser.INTEGER.readFromJsonElement(elem);
             } else if (elem.isTextual()){
                 @SuppressWarnings("rawtypes,unchecked") // All TEnum are enums
-                Class casted = (Class) currentFieldEnumClass;
+                Class casted = (Class) fieldClass;
                 TEnum tEnum = (TEnum) Enum.valueOf(casted, TypedParser.STRING.readFromJsonElement(elem));
                 return tEnum.getValue();
             } else {
@@ -687,6 +694,17 @@ public class TTextProtocol extends TProtocol {
         return ret;
     }
 
+    private Class<?> getCurrentFieldClassIfIs(Class<?> classToMatch) {
+        if (currentFieldClass.isEmpty() || currentFieldClass.peek() == null) {
+            return null;
+        }
+        Class<?> classToCheck = currentFieldClass.peek();
+        if (classToMatch.isAssignableFrom(classToCheck)) {
+            return classToCheck;
+        }
+        return null;
+    }
+
     private void pushWriter(ByteArrayOutputStream baos) {
         JsonGenerator generator;
         try {
@@ -719,6 +737,8 @@ public class TTextProtocol extends TProtocol {
      * Factory
      */
     public static class Factory implements TProtocolFactory {
+        private static final long serialVersionUID = -5607714914895109618L;
+
         @Override
         public TProtocol getProtocol(TTransport trans) {
             return new TTextProtocol(trans);
@@ -752,7 +772,7 @@ public class TTextProtocol extends TProtocol {
             }
             // Clears the internal memory buffer, since we've already
             // written it out.
-            super.reset();
+            reset();
         }
     }
 }

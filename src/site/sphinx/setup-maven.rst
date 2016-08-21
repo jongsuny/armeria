@@ -34,7 +34,7 @@ you don't need this if you are going to use HTTP/2 over a cleartext connection (
       <properties>
         <jetty.alpnAgent.version>\ |jetty_alpnAgent_version|\ </jetty.alpnAgent.version>
         <jetty.alpnAgent.path>${settings.localRepository}/org/mortbay/jetty/alpn/jetty-alpn-agent/${jetty.alpnAgent.version}/jetty-alpn-agent-${jetty.alpnAgent.version}.jar</jetty.alpnAgent.path>
-        <argLine.alpnAgent>-javaagent:${jetty.alpnAgent.path}</argLine.alpnAgent>
+        <argLine.alpnAgent>-javaagent:"${jetty.alpnAgent.path}"</argLine.alpnAgent>
       </properties>
       ...
       <build>
@@ -107,11 +107,6 @@ If you want to embed Tomcat into Armeria, you'll have to add the optional depend
           <version>${tomcat.version}</version>
         </dependency>
         <dependency>
-          <groupId>org.apache.tomcat.embed</groupId>
-          <artifactId>tomcat-embed-logging-log4j</artifactId>
-          <version>${tomcat.version}</version>
-        </dependency>
-        <dependency>
           <groupId>org.slf4j</groupId>
           <artifactId>log4j-over-slf4j</artifactId>
           <version>${slf4j.version}</version>
@@ -165,7 +160,7 @@ You might want to use the following  ``pom.xml`` as a template if you are starti
         <tomcat.version>\ |tomcat_version|\ </tomcat.version>
         <jetty.alpnAgent.version>\ |jetty_alpnAgent_version|\ </jetty.alpnAgent.version>
         <jetty.alpnAgent.path>${settings.localRepository}/org/mortbay/jetty/alpn/jetty-alpn-agent/${jetty.alpnAgent.version}/jetty-alpn-agent-${jetty.alpnAgent.version}.jar</jetty.alpnAgent.path>
-        <argLine.alpnAgent>-javaagent:${jetty.alpnAgent.path}=${jetty.alpnAgent.option}</argLine.alpnAgent>
+        <argLine.alpnAgent>-javaagent:"${jetty.alpnAgent.path}"</argLine.alpnAgent>
       </properties>
 
       <dependencies>

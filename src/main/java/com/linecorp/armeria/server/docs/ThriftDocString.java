@@ -19,12 +19,14 @@ package com.linecorp.armeria.server.docs;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.reflections.Configuration;
 import org.reflections.Reflections;
 import org.reflections.scanners.ResourcesScanner;
 import org.reflections.util.ClasspathHelper;
@@ -36,6 +38,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 
@@ -53,13 +56,14 @@ final class ThriftDocString {
 
     private static final String THRIFT_JSON_PATH;
 
-    private static final TypeReference JSON_VALUE_TYPE = new TypeReference<HashMap<String, Object>>() {};
+    private static final TypeReference<HashMap<String, Object>> JSON_VALUE_TYPE =
+            new TypeReference<HashMap<String, Object>>() {};
 
     private static final String FQCN_DELIM = ".";
 
     private static final String DELIM = "#";
 
-    private static Map<ClassLoader, Map<String, String>> cached = new ConcurrentHashMap<>();
+    private static final Map<ClassLoader, Map<String, String>> cached = new ConcurrentHashMap<>();
 
     static {
         final String propertyName = "com.linecorp.armeria.thrift.jsonDir";
@@ -98,13 +102,15 @@ final class ThriftDocString {
     }
 
     static Iterable<String> getAllThriftJsons(ClassLoader classLoader) {
-        final Reflections reflections = new Reflections(
-                new ConfigurationBuilder()
-                        .filterInputsBy(new FilterBuilder().includePackage(THRIFT_JSON_PATH))
-                        .setUrls(ClasspathHelper.forPackage(THRIFT_JSON_PATH))
-                        .addClassLoader(classLoader)
-                        .addScanners(new ResourcesScanner()));
-        return reflections.getResources(filename -> filename.endsWith(".json"));
+        final Configuration configuration = new ConfigurationBuilder()
+                .filterInputsBy(new FilterBuilder().includePackage(THRIFT_JSON_PATH))
+                .setUrls(ClasspathHelper.forPackage(THRIFT_JSON_PATH))
+                .addClassLoader(classLoader)
+                .addScanners(new ResourcesScanner());
+        if (configuration.getUrls() == null || configuration.getUrls().isEmpty()) {
+            return Collections.emptyList();
+        }
+        return new Reflections(configuration).getResources(filename -> filename.endsWith(".json"));
     }
 
     /**
@@ -131,9 +137,10 @@ final class ThriftDocString {
             final String packageName = (String) namespaces.get("java");
             json.forEach((key, children) -> {
                 if (children instanceof Collection) {
-                    ((Collection) children).forEach(grandChild -> {
-                        traverseChildren(docStrings, packageName, FQCN_DELIM, grandChild);
-                    });
+                    @SuppressWarnings("unchecked")
+                    Collection<Object> castChildren = (Collection<Object>) children;
+                    castChildren.forEach(
+                            grandChild -> traverseChildren(docStrings, packageName, FQCN_DELIM, grandChild));
                 }
             });
 
@@ -152,9 +159,9 @@ final class ThriftDocString {
             final String doc = (String) map.get("doc");
             String childPrefix;
             if (name != null) {
-                childPrefix = (prefix != null ? prefix : "") + delimiter + name;
+                childPrefix = MoreObjects.firstNonNull(prefix, "") + delimiter + name;
                 if (doc != null) {
-                    docStrings.put(childPrefix, doc);
+                    docStrings.put(childPrefix, doc.trim());
                 }
             } else {
                 childPrefix = prefix;
