@@ -1,0 +1,210 @@
+#
+# NB: Update NOTICE.txt and add/remove LICENSE.*.txt when adding/removing a dependency.
+#     If its classes are exposed in Javadoc, update offline links as well.
+#
+
+ch.qos.logback:
+  logback-classic: { version: '1.2.3' }
+
+com.fasterxml.jackson.core:
+  jackson-annotations: { version: &JACKSON_VERSION '2.9.2' }
+  jackson-core: { version: *JACKSON_VERSION }
+  jackson-databind: { version: *JACKSON_VERSION }
+
+com.github.ben-manes.caffeine:
+  caffeine: { version: '2.6.0' }
+
+com.google.code.findbugs:
+  jsr305: { version: '3.0.2' }
+
+com.google.guava:
+  guava:
+    version: &GUAVA_VERSION '23.4-jre'
+    exclusions:
+    - com.google.code.findbugs:jsr305
+    - com.google.errorprone:error_prone_annotations
+    - com.google.j2objc:j2objc-annotations
+    - org.codehaus.mojo:animal-sniffer-annotations
+  guava-testlib:
+    version: *GUAVA_VERSION
+    exclusions:
+    - com.google.code.findbugs:jsr305
+    - com.google.errorprone:error_prone_annotations
+    - com.google.j2objc:j2objc-annotations
+
+com.puppycrawl.tools:
+  checkstyle: { version: '8.4' }
+
+com.spotify:
+  completable-futures: { version: '0.3.2' }
+
+com.squareup.retrofit2:
+  retrofit: { version: &RETROFIT2_VERSION '2.3.0' }
+  adapter-java8: { version: *RETROFIT2_VERSION }
+  converter-jackson: { version: *RETROFIT2_VERSION }
+
+io.dropwizard.metrics:
+  metrics-core: { version: &DROPWIZARD_VERSION '3.2.5' }
+  metrics-json: { version: *DROPWIZARD_VERSION }
+
+io.grpc:
+  grpc-core:
+    version: &GRPC_VERSION '1.7.0'
+    exclusions:
+    - com.google.code.findbugs:jsr305
+    - com.google.errorprone:error_prone_annotations
+  grpc-interop-testing:
+    version: *GRPC_VERSION
+    exclusions:
+    - com.google.guava:guava-jdk5
+    - io.netty:netty-codec-http
+    - io.netty:netty-codec-http2
+    - io.netty:netty-codec-socks
+    - io.netty:netty-handler-proxy
+    - io.netty:netty-transport
+    - io.netty:netty-tcnative-boringssl-static
+  grpc-netty: { version: *GRPC_VERSION }
+  grpc-okhttp: { version: *GRPC_VERSION }
+  grpc-protobuf: { version: *GRPC_VERSION }
+  grpc-stub: { version: *GRPC_VERSION }
+  grpc-testing: { version: *GRPC_VERSION }
+
+io.micrometer:
+  micrometer-core: { version: &MICROMETER_VERSION '1.0.0-rc.4' }
+  micrometer-registry-prometheus: { version: *MICROMETER_VERSION }
+  micrometer-spring-legacy:
+    version: *MICROMETER_VERSION
+    exclusions:
+    - org.springframework:spring-web
+    - org.springframework:spring-webmvc
+
+io.netty:
+  netty-codec-http2: { version: &NETTY_VERSION '4.1.17.Final' }
+  netty-handler: { version: *NETTY_VERSION }
+  netty-resolver-dns: { version: *NETTY_VERSION }
+  netty-transport: { version: *NETTY_VERSION }
+  netty-transport-native-epoll: { version: *NETTY_VERSION }
+  netty-transport-native-unix-common: { version: *NETTY_VERSION }
+  netty-tcnative-boringssl-static: { version: '2.0.7.Final' }
+
+io.prometheus:
+  simpleclient_common: { version: '0.1.0' }
+
+io.zipkin.brave:
+  brave: { version: &BRAVE_VERSION '4.9.2' }
+
+it.unimi.dsi:
+  fastutil: { version: '8.1.0' }
+
+javax.inject:
+  javax.inject: { version: '1' }
+
+javax.validation:
+  validation-api: { version: '2.0.0.Final' }
+
+junit:
+  junit: { version: '4.12' }
+
+net.javacrumbs.json-unit:
+  json-unit: { version: &JSON_UNIT_VERSION '1.25.1' }
+  json-unit-fluent: { version: *JSON_UNIT_VERSION }
+
+org.apache.hbase:
+  hbase-shaded-client:
+    version: '1.2.6'
+    exclusions:
+    - com.github.stephenc.findbugs:findbugs-annotations
+    - commons-logging:commons-logging
+    - log4j:log4j
+    - org.slf4j:slf4j-log4j12
+
+org.apache.httpcomponents:
+  httpclient:
+    version: '4.5.3'
+    exclusions:
+    - commons-logging:commons-logging
+
+org.apache.kafka:
+  kafka-clients: { version: '1.0.0' }
+
+org.apache.thrift:
+  libthrift:
+    version: '0.10.0'
+    exclusions:
+    - org.apache.httpcomponents:httpcore
+    - org.apache.httpcomponents:httpclient
+
+org.apache.tomcat.embed:
+  tomcat-embed-core: { version: &TOMCAT_VERSION '8.5.23' }
+  tomcat-embed-jasper: { version: *TOMCAT_VERSION }
+  tomcat-embed-el: { version: *TOMCAT_VERSION }
+
+org.apache.zookeeper:
+  zookeeper:
+    version: '3.4.11'
+    exclusions:
+    - jline:jline
+    - log4j:log4j
+    - org.slf4j:slf4j-log4j12
+
+org.assertj:
+  assertj-core: { version: '3.8.0' }
+
+org.awaitility:
+  awaitility: { version: '3.0.0' }
+
+org.curioswitch.curiostack:
+  protobuf-jackson: { version: '0.1.1' }
+
+org.dmonix.junit:
+  zookeeper-junit: { version: '1.2' }
+
+org.eclipse.jetty:
+  apache-jsp: { version: &JETTY_VERSION '9.4.7.v20170914' }
+  apache-jstl: { version: *JETTY_VERSION }
+  jetty-annotations: { version: *JETTY_VERSION }
+  jetty-server: { version: *JETTY_VERSION  }
+  jetty-webapp: { version: *JETTY_VERSION }
+
+org.eclipse.jetty.alpn:
+  alpn-api: { version: '1.1.3.v20160715' }
+
+org.eclipse.jetty.http2:
+  http2-server: { version: *JETTY_VERSION }
+
+org.hamcrest:
+  hamcrest-library: { version: '1.3' }
+
+org.hibernate.validator:
+  hibernate-validator: { version: '6.0.5.Final' }
+
+org.javassist:
+  javassist: { version: '3.22.0-GA' }
+
+org.mockito:
+  mockito-core: { version: '2.12.0' }
+
+org.mortbay.jetty.alpn:
+  jetty-alpn-agent: { version: '2.0.6' }
+
+org.openjdk.jmh:
+  jmh-core: { version: &JMH_VERSION '1.19' }
+  jmh-generator-annprocess: { version: *JMH_VERSION }
+
+org.reactivestreams:
+  reactive-streams: { version: &REACTIVE_STREAMS_VERSION '1.0.1' }
+  reactive-streams-tck: { version: *REACTIVE_STREAMS_VERSION }
+
+org.reflections:
+  reflections:
+    version: '0.9.11'
+
+org.slf4j:
+  jcl-over-slf4j: { version: &SLF4J_VERSION '1.7.25' }
+  jul-to-slf4j: { version: *SLF4J_VERSION }
+  log4j-over-slf4j: { version: *SLF4J_VERSION }
+  slf4j-api: { version: *SLF4J_VERSION }
+
+org.springframework.boot:
+  spring-boot-starter: { version: &SPRING_BOOT_VERSION '1.5.8.RELEASE' }
+  spring-boot-starter-test: { version: *SPRING_BOOT_VERSION }

@@ -5,8 +5,13 @@
 
 <module name="Checker">
   <property name="charset" value="UTF-8"/>
-  <property name="severity" value="warning"/>
+  <property name="severity" value="error"/>
   <property name="fileExtensions" value="java, properties, xml"/>
+
+  <module name="SuppressWarningsFilter" />
+  <module name="SuppressionFilter">
+    <property name="file" value="${checkstyleConfigDir}/checkstyle-suppressions.xml"/>
+  </module>
 
   <module name="Header">
     <property name="fileExtensions" value="java"/>
@@ -18,7 +23,50 @@
     <property name="eachLine" value="true"/>
   </module>
 
+  <!-- Copyright headers -->
+  <module name="RegexpSingleline">
+    <property name="format" value="^(?:\s|\*)*Copyright\s+[0-9]+\s+LINE Corporation\s*$"/>
+    <property name="minimum" value="1"/>
+    <property name="maximum" value="1"/>
+    <property name="message" value="missing copyright header"/>
+  </module>
+  <!-- Unmaintainable Javadoc tags -->
+  <module name="RegexpSingleline">
+    <property name="format" value="(?:@version|\(non-Javadoc\))"/>
+    <property name="ignoreCase" value="true"/>
+    <property name="message" value="unmaintainable Javadoc tags: @version or (non-Javadoc)"/>
+  </module>
+  <!-- IDE-generated comment -->
+  <module name="RegexpSingleline">
+    <property name="format" value="File \| Settings \| File Templates"/>
+    <property name="message" value="IDE-generated comment"/>
+  </module>
+  <!-- Trailing spaces -->
+  <module name="RegexpSingleline">
+    <property name="format" value="\s+$"/>
+    <property name="message" value="trailing spaces"/>
+  </module>
+  <!-- Consecutive empty lines -->
+  <module name="RegexpMultiline">
+    <property name="format" value="[^\r\n](?:\r?\n){3,}"/>
+    <property name="message" value="consecutive empty lines"/>
+  </module>
+  <!-- Empty lines between two opening braces -->
+  <module name="RegexpMultiline">
+    <property name="format" value="\{(?:\s*\r?\n){2,}\s*\{"/>
+    <property name="message" value="empty lines between two opening braces ('{')"/>
+  </module>
+  <!-- Empty lines before a closing brace -->
+  <module name="RegexpMultiline">
+    <property name="format" value="(?:\s*\r?\n){2,}\s*\}"/>
+    <property name="message" value="empty lines before a closing brace ('}')"/>
+  </module>
+
+  <module name="JavadocPackage"/>
+
   <module name="TreeWalker">
+    <module name="SuppressWarningsHolder"/>
+
     <module name="AnnotationLocation">
       <property name="tokens" value="CLASS_DEF, INTERFACE_DEF, ENUM_DEF, METHOD_DEF, CTOR_DEF"/>
     </module>
@@ -43,7 +91,7 @@
     <module name="RightCurly">
       <property name="option" value="alone"/>
       <property name="tokens"
-                value="CLASS_DEF, METHOD_DEF, CTOR_DEF, LITERAL_FOR, LITERAL_WHILE, LITERAL_DO, STATIC_INIT, INSTANCE_INIT"/>
+                value="CLASS_DEF, METHOD_DEF, CTOR_DEF, LITERAL_FOR, LITERAL_WHILE, STATIC_INIT, INSTANCE_INIT"/>
     </module>
 
     <module name="FinalClass"/>
@@ -140,11 +188,9 @@
     <module name="ModifierOrder"/>
     <module name="RedundantModifier"/>
 
-    <module name="AbbreviationAsWordInName">
-      <property name="ignoreFinal" value="false"/>
-    </module>
+    <module name="AbbreviationAsWordInName"/>
     <module name="ClassTypeParameterName">
-      <property name="format" value="^[A-Z][A-Z0-9]*$"/>
+      <property name="format" value="^[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$"/>
       <message key="name.invalidPattern"
                value="Class type name ''{0}'' must match pattern ''{1}''."/>
     </module>
@@ -164,7 +210,7 @@
                value="Method name ''{0}'' must match pattern ''{1}''."/>
     </module>
     <module name="MethodTypeParameterName">
-      <property name="format" value="^[A-Z][A-Z0-9]*$"/>
+      <property name="format" value="^[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$"/>
       <message key="name.invalidPattern"
                value="Method type name ''{0}'' must match pattern ''{1}''."/>
     </module>

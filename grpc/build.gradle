@@ -1,0 +1,13 @@
+apply plugin: 'com.google.protobuf'
+
+managedDependencies {
+    // gRPC
+    [ 'grpc-core', 'grpc-stub', 'grpc-protobuf' ].each {
+        compile "io.grpc:$it"
+    }
+
+    compile 'org.curioswitch.curiostack:protobuf-jackson'
+
+    testCompile 'io.grpc:grpc-okhttp'
+    testCompile 'io.grpc:grpc-testing'
+}
